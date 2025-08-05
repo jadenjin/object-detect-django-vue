@@ -30,3 +30,8 @@ npm run dev
 npm run build
 ```
 
+## 功能展示
+* 支持自定义上传模型
+* 支持自定义置信度
+* 支持检测前后对比
+[![演示视频](/doc/演示视频.gif)](https://www.youtube.com/watch?v=XvMwYwXwXwY)
