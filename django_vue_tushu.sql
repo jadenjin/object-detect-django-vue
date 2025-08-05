@@ -5,7 +5,7 @@
  Source Server Type    : MySQL
  Source Server Version : 80016
  Source Host           : localhost:3306
- Source Schema         : django_vue_tushu
+ Source Schema         : django_vue
 
  Target Server Type    : MySQL
  Target Server Version : 80016

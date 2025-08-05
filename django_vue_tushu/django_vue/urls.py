@@ -1,4 +1,4 @@
-"""django_vue_tushu URL Configuration
+"""django_vue URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/3.2/topics/http/urls/
@@ -15,17 +15,16 @@ Including another URLconf
 """
 from django.urls import path, re_path, include
 from django.contrib import admin
-from dvtushu import views
+from detect import views
 from rest_framework.documentation import include_docs_urls
 from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
     # 接口文档
-    path('docs/', include_docs_urls(title='tushu')),
+    path('docs/', include_docs_urls(title='文档')),
     path('admin/', admin.site.urls),
-    path('api/', include('dvtushu.urls'), name='dvtushu'),
-    # 图片上传接口
+    path('api/', include('detect.urls'), name='detect'),
     re_path('upload/', views.uploadApiview.as_view()),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

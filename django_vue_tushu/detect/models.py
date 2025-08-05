@@ -3,9 +3,7 @@ import uuid
 from django.db import models
 
 
-# Create your models here.
-
-# 管理表
+# 用户表
 class SysUser(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='ID')
     username = models.CharField(max_length=32)
@@ -17,6 +15,7 @@ class SysUser(models.Model):
         db_table = 'sys_user'
 
 
+# 模型表
 class DetectModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='ID')
     name = models.CharField(max_length=64)

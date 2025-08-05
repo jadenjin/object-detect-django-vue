@@ -1,9 +1,10 @@
 from rest_framework.authentication import BaseAuthentication
 from rest_framework import exceptions
 import time
-from django_vue_tushu import settings
+from django_vue import settings
 import jwt
 from .models import SysUser
+
 
 class TokenAuthtication(BaseAuthentication):
     def authenticate(self, request):
