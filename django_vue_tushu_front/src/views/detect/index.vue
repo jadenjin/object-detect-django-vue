@@ -1,14 +1,9 @@
 <template>
   <div class="container">
-    <!-- Canvas画布 -->
-    <canvas
-      ref="canvasRef"
-      width="600"
-      height="400"
-      class="canvas"
-    />
+    <!-- Canvas -->
+    <canvas ref="canvasRef" width="600" height="400" class="canvas" />
 
-    <!-- 操作按钮 -->
+    <!-- 按钮区 -->
     <div class="button-group">
       <el-upload
         ref="uploadRef"
@@ -32,15 +27,40 @@
         对比
       </el-button>
 
-      <el-button @click="downloadImage">
-        下载
-      </el-button>
+      <el-button @click="downloadImage">下载</el-button>
+    </div>
+
+    <!-- 下拉选择器 + 滑动条 -->
+    <div class="controls">
+      <el-select
+        v-model="selectedModelPath"
+        placeholder="选择模型"
+        style="width: 200px"
+      >
+        <el-option
+          v-for="item in modelList"
+          :key="item.id"
+          :label="item.name"
+          :value="item.path"
+        />
+      </el-select>
+
+      <div class="slider">
+        <span class="slider-label">置信度：{{ (confidenceThreshold * 100).toFixed(0) }}%</span>
+        <el-slider
+          v-model="confidenceThreshold"
+          :min="0"
+          :max="1"
+          :step="0.01"
+          style="width: 200px"
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, onMounted, watch } from "vue";
 import axios from "axios";
 
 const canvasRef = ref(null);
@@ -49,8 +69,36 @@ const originalImage = ref(null);
 const detections = ref([]);
 const isComparing = ref(false);
 
-// 上传文件变化
+// 模型列表和选择
+const modelList = ref([]);
+const selectedModelPath = ref("");
+
+// 获取模型列表
+const fetchModelList = async () => {
+  try {
+    const res = await axios.get("http://127.0.0.1:8000/api/model/");
+    if (res.data.code === 200 && Array.isArray(res.data.data)) {
+      modelList.value = res.data.data;
+      if (res.data.data.length > 0) {
+        selectedModelPath.value = res.data.data[0].path;
+      }
+    }
+  } catch (err) {
+    console.error("获取模型列表失败:", err);
+  }
+};
+
+// 页面加载时获取模型
+onMounted(() => {
+  fetchModelList();
+});
+
+const confidenceThreshold = ref(0.5);
+
+// 上传处理
 const handleFileChange = (uploadFile) => {
+  reset();
+
   const reader = new FileReader();
   reader.onload = (e) => {
     const img = new Image();
@@ -65,7 +113,7 @@ const handleFileChange = (uploadFile) => {
   reader.readAsDataURL(uploadFile.raw);
 };
 
-// 阻止自动上传
+
 const handleUpload = () => false;
 
 // 重置画布
@@ -77,7 +125,7 @@ const reset = () => {
   ctx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height);
 };
 
-// 绘制图像和检测框
+// 绘制画布
 const drawCanvas = () => {
   const canvas = canvasRef.value;
   const ctx = canvas.getContext("2d");
@@ -109,14 +157,18 @@ const drawCanvas = () => {
 
   if (!isComparing.value) {
     detections.value.forEach((det) => {
+      if (det.confidence < confidenceThreshold.value) return;
+
       const [x1, y1, w1, h1] = det.bbox;
       const x = x1 * drawWidth;
       const y = y1 * drawHeight;
       const w = w1 * drawWidth;
       const h = h1 * drawHeight;
+
       ctx.strokeStyle = "red";
       ctx.lineWidth = 2;
       ctx.strokeRect(x, y, w, h);
+
       ctx.font = "14px Arial";
       ctx.fillStyle = "red";
       ctx.fillText(
@@ -128,7 +180,7 @@ const drawCanvas = () => {
   }
 };
 
-// 下载画布图像
+// 下载图像
 const downloadImage = () => {
   const canvas = canvasRef.value;
   if (!canvas) return;
@@ -142,8 +194,12 @@ const downloadImage = () => {
   document.body.removeChild(link);
 };
 
-// 对比模式变化监听
+// 监听状态变化
 watch(isComparing, () => {
+  drawCanvas();
+});
+
+watch(confidenceThreshold, () => {
   drawCanvas();
 });
 
@@ -151,11 +207,13 @@ watch(isComparing, () => {
 const sendToDetect = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
+  formData.append("model_path", selectedModelPath.value);
   try {
-    const res = await axios.post("http://localhost:8000/api/detect/", formData);
+    const res = await axios.post("http://127.0.0.1:8000/api/detect/", formData);
     detections.value = res.data.data || [];
     drawCanvas();
   } catch (err) {
+    console.error("检测失败:", err);
   }
 };
 </script>
@@ -177,5 +235,25 @@ const sendToDetect = async (file) => {
   gap: 10px;
   justify-content: center;
   flex-wrap: wrap;
+}
+
+.controls {
+  margin-top: 20px;
+  display: flex;
+  gap: 30px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.slider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.slider-label {
+  font-size: 14px;
+  white-space: nowrap;
 }
 </style>

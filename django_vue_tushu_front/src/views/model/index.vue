@@ -74,6 +74,8 @@
   <!-- 新增或编辑的抽屉 -->
   <sDrawer
     v-model="visible"
+    destroy-on-close
+append-to-body
     :title="form.id ? '编辑模型' : '添加模型'"
     size="35%"
     :close-on-click-modal="false"
@@ -96,6 +98,7 @@
     <el-form :model="form" label-width="100px" ref="ruleFormRef">
       <el-form-item label="模型文件:">
         <el-upload
+        
           class="upload-demo"
           action="http://127.0.0.1:8000/api/upload/"
           :show-file-list="true"
@@ -117,7 +120,7 @@
 
 <script>
 import sDrawer from "@/components/s-drawer/s-drawer.vue";
-import { hostURL } from '@/utils/request.js'
+import { hostURL } from "@/utils/request.js";
 export default {
   components: {
     sDrawer,
@@ -199,13 +202,15 @@ export default {
       }
     },
     async deleteItem(id) {
-      const res = await this.$request.delete("/api/del/" + id + "/");
+      const res = await this.$request.delete("/api/model/", {
+        data: { id },
+      });
       if (res.data.code === 200) {
         this.$message.success(res.data.message);
         this.getList();
       }
     },
-    formatDate(row, column,cellValue) {
+    formatDate(row, column, cellValue) {
       if (!cellValue) return "";
       const date = new Date(cellValue);
       const Y = date.getFullYear();
@@ -237,7 +242,7 @@ export default {
         return;
       }
       // 直接打开文件链接触发下载
-      downloadPath = hostURL + "/download/" + row.path
+      downloadPath = hostURL + "/download/" + row.path;
       window.open(downloadPath, "_blank");
     },
   },

@@ -24,6 +24,7 @@ ret = {
         "message": "注册成功"
     }
 }
+upload_dir = settings.MEDIA_ROOT
 
 
 # 图片上传接口
@@ -31,8 +32,6 @@ class uploadApiview(APIView):
     def post(self, request):
         response = {}
         file = request.FILES.get('file')
-
-        upload_dir = settings.MEDIA_ROOT
         os.makedirs(upload_dir, exist_ok=True)
         file_path = os.path.join(upload_dir, file.name)
         with open(file_path, 'wb+') as f:
@@ -104,10 +103,10 @@ class LoginView(APIView):
 class ModelView(APIView):
     def get(self, request):
         pageNum = request.query_params.get('pageNum', 1)
-        pageSize = request.query_params.get('pageSize', 10)
+        pageSize = request.query_params.get('pageSize', 999)
         name = request.query_params.get('name', '')
         queryset = DetectModel.objects.filter(delFlag=False)
-        queryset = queryset.order_by('createTime')
+        queryset = queryset.order_by('-createTime')
         if name:
             queryset = queryset.filter(name__icontains=name)
         paginator = Paginator(queryset, pageSize)
@@ -141,39 +140,60 @@ class ModelView(APIView):
             return Response({'code': 200, 'message': '修改成功'})
         return Response({'code': 400, 'message': '修改失败', 'errors': ser.errors})
 
+    def delete(self, request):
+        model_id = request.data.get('id')
+        if not model_id:
+            return Response({'code': 400, 'message': '缺少id'}, status=400)
+
+        try:
+            instance = DetectModel.objects.get(id=model_id)
+            file_path = os.path.join(upload_dir, instance.path)
+            if instance.path and os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                except Exception as e:
+                    return Response({'code': 500, 'message': f'文件删除失败: {str(e)}'}, status=500)
+            instance.delete()
+            return Response({'code': 200, 'message': '删除成功'}, status=200)
+        except DetectModel.DoesNotExist:
+            return Response({'code': 404, 'message': '对象不存在'}, status=404)
+
 
 class DetectView(APIView):
     def post(self, request):
-        response = {}
         file = request.FILES.get('file')
-
+        model_path = request.data.get('model_path')
+        model_path = str(os.path.join("upload", model_path))
         upload_dir = settings.DETECT_PATH
         os.makedirs(upload_dir, exist_ok=True)
         file_path = os.path.join(upload_dir, file.name)
-        save_path = os.path.join(DETECT_RESULT_PATH, file.name)
+        save_path = str(os.path.join(DETECT_RESULT_PATH, file.name))
         with open(file_path, 'wb+') as f:
             f.write(file.read())
             f.close()
-        model = YOLO("upload/yolo11n.pt")
-        results = model(str(file_path))
-        detections = []
-        for result in results:
-            boxes = result.boxes
-            result.save(filename="result.jpg")
+        try:
+            model = YOLO(model_path)
+            results = model(str(file_path))
+            detections = []
+            for result in results:
+                boxes = result.boxes
+                result.save(filename=save_path)
 
-            for box in boxes:
-                x1, y1, x2, y2 = box.xyxyn[0].tolist()
-                cls_id = int(box.cls[0])
-                conf = float(box.conf[0])
-                w = abs(x2 - x1)
-                h = abs(y2 - y1)
-                label = model.names[cls_id]
-                detections.append({
-                    'bbox': [x1, y1, w, h],
-                    'label': label,
-                    'confidence': round(conf, 4)
-                })
-        logger.info(detections)
+                for box in boxes:
+                    x1, y1, x2, y2 = box.xyxyn[0].tolist()
+                    cls_id = int(box.cls[0])
+                    conf = float(box.conf[0])
+                    w = abs(x2 - x1)
+                    h = abs(y2 - y1)
+                    label = model.names[cls_id]
+                    detections.append({
+                        'bbox': [x1, y1, w, h],
+                        'label': label,
+                        'confidence': round(conf, 4)
+                    })
+        except Exception as e:
+            return Response(data={'code': 500, 'message': '模型异常', 'data': None})
+
         return Response(data={'code': 200, 'message': '检测成功', 'data': detections})
 
 # class TSview(APIView):
