@@ -1,14 +1,16 @@
-# mall-admin
+# django_vue 
+# 模型只支持ultralytics的目标检测系列！！！
 
-该模板将帮助您开始在Vite中使用Vue 3进行开发。
+## 安装依赖
+```sh
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+```
+## 运行项目
+``` sh
+python manage.py runserver 127.0.0.1:8000
+```
 
-## 推荐的IDE设置
-
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
-
-## 自定义配置
-
-看 [快速配置参考](https://cn.vitejs.dev/config/).
+# django_vue_front
 
 ## 项目设置
 
@@ -27,3 +29,4 @@ npm run dev
 ```sh
 npm run build
 ```
+

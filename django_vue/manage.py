@@ -10,7 +10,7 @@ def main():
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'django_vue.settings')
     try:
         from django.core.management import execute_from_command_line
-    except ImportError as exc:
+    except ImportError:
         print("Django 未安装，尝试自动安装 requirements.txt 中的依赖...")
         try:
             subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt", "-i",

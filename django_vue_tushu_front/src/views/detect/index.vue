@@ -76,7 +76,8 @@ const selectedModelPath = ref("");
 // 获取模型列表
 const fetchModelList = async () => {
   try {
-    const res = await axios.get("http://127.0.0.1:8000/api/model/");
+    
+    const res = await axios.get(VITE_API_BASE_URL + "/api/model/");
     if (res.data.code === 200 && Array.isArray(res.data.data)) {
       modelList.value = res.data.data;
       if (res.data.data.length > 0) {
@@ -209,7 +210,7 @@ const sendToDetect = async (file) => {
   formData.append("file", file);
   formData.append("model_path", selectedModelPath.value);
   try {
-    const res = await axios.post("http://127.0.0.1:8000/api/detect/", formData);
+    const res = await axios.post(VITE_API_BASE_URL + "/api/detect/", formData);
     detections.value = res.data.data || [];
     drawCanvas();
   } catch (err) {

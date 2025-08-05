@@ -75,7 +75,7 @@
   <sDrawer
     v-model="visible"
     destroy-on-close
-append-to-body
+    append-to-body
     :title="form.id ? '编辑模型' : '添加模型'"
     size="35%"
     :close-on-click-modal="false"
@@ -98,9 +98,8 @@ append-to-body
     <el-form :model="form" label-width="100px" ref="ruleFormRef">
       <el-form-item label="模型文件:">
         <el-upload
-        
           class="upload-demo"
-          action="http://127.0.0.1:8000/api/upload/"
+          action="uploadUrl"
           :show-file-list="true"
           :limit="1"
           :on-success="handleUploadSuccess"
@@ -121,6 +120,8 @@ append-to-body
 <script>
 import sDrawer from "@/components/s-drawer/s-drawer.vue";
 import { hostURL } from "@/utils/request.js";
+
+const uploadUrl = import.meta.env.VITE_API_BASE_URL + "/api/upload/";
 export default {
   components: {
     sDrawer,
