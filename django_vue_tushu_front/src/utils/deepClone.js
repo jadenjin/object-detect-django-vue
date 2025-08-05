@@ -5,15 +5,15 @@ function getdataType(val) {
 }
 // 1.2 判断是否为对象
 function isObj(val) {
-    return getdataType(val) == '[object Object]'
+    return getdataType(val) === '[object Object]'
 }
 // 1.3 判断是否为数组
 function isArr(val) {
-    return getdataType(val) == '[object Array]'
+    return getdataType(val) === '[object Array]'
 }
 // 1.4 判断是否为函数
 function isFn(val) {
-    return getdataType(val) == '[object Function]'
+    return getdataType(val) === '[object Function]'
 }
 // 2.cloneDeep函数进行判断
 function cloneDeep(val) {

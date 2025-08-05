@@ -35,7 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'detect.apps.DvtushuConfig',
+    'detect.apps.DetectConfig',
     'corsheaders',
     'rest_framework',
 ]
@@ -89,7 +89,7 @@ DATABASES = {
         "PORT": 3306,
         "USER": "root",
         "PASSWORD": "Admin123@jit",
-        "NAME": "django_vue",
+        "NAME": "django_vue_tushu",
     }
 }
 

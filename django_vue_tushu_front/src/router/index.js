@@ -1,88 +1,88 @@
-import { createRouter, createWebHistory } from "vue-router";
-import NProgress from "nprogress"; //进度条
+import {createRouter, createWebHistory} from "vue-router";
+import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 
 NProgress.configure({
-  showSpinner: false, //通过将其设置为 false 来关闭加载微调器。
+    showSpinner: false,
 });
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [
-    {
-      path: "/login",
-      name: "login",
-      meta: { title: "登陆" },
-      component: () => import("@/views/login/login.vue"),
-      hidden: true,
-    },
-    {
-      path: "/signin",
-      name: "signin",
-      meta: { title: "注册" },
-      component: () => import("@/views/signin/signin.vue"),
-      hidden: true,
-    },
-    {
-      path: "/main",
-      name: "main",
-      meta: { title: "主页" },
-      component: () => import("@/views/main/index.vue"),
-      children: [
+    history: createWebHistory(import.meta.env.BASE_URL),
+    routes: [
         {
-          path: "home",
-          name: "home",
-          meta: { title: "首页" },
-          component: () => import("@/views/home/index.vue"),
-        },{
-          path: "model",
-          name: "model",
-          meta: { title: "模型管理" },
-          component: () => import("@/views/model/index.vue"),
+            path: "/login",
+            name: "login",
+            meta: {title: "登陆"},
+            component: () => import("@/views/login/login.vue"),
+            hidden: true,
         },
         {
-          path: "detect",
-          name: "detect",
-          meta: { title: "在线检测" },
-          component: () => import("@/views/detect/index.vue"),
+            path: "/signin",
+            name: "signin",
+            meta: {title: "注册"},
+            component: () => import("@/views/signin/signin.vue"),
+            hidden: true,
         },
         {
-          path: "result",
-          name: "result",
-          meta: { title: "检测结果" },
-          component: () => import("@/views/result/index.vue"),
-        }
-      ],
-    },
-  ],
+            path: "/main",
+            name: "main",
+            meta: {title: "主页"},
+            component: () => import("@/views/main/index.vue"),
+            children: [
+                {
+                    path: "home",
+                    name: "home",
+                    meta: {title: "首页"},
+                    component: () => import("@/views/home/index.vue"),
+                }, {
+                    path: "model",
+                    name: "model",
+                    meta: {title: "模型管理"},
+                    component: () => import("@/views/model/index.vue"),
+                },
+                {
+                    path: "detect",
+                    name: "detect",
+                    meta: {title: "在线检测"},
+                    component: () => import("@/views/detect/index.vue"),
+                },
+                {
+                    path: "result",
+                    name: "result",
+                    meta: {title: "检测结果"},
+                    component: () => import("@/views/result/index.vue"),
+                }
+            ],
+        },
+    ],
 });
 
 import defaultSettings from "@/settings";
 
 //路由全局前置钩子
 router.beforeEach((to, from, next) => {
-  NProgress.start();
-  document.title = `${to.meta.title || "jdc"} - ${defaultSettings.title}`;
-  let token = localStorage.getItem("token");
-  
-  // 允许未登录访问的路由白名单
-  const whiteList = ['/login', '/signin'];
+    NProgress.start();
+    document.title = `${to.meta.title || "JDC"} - ${defaultSettings.title}`;
+    let token = localStorage.getItem("token");
 
-  if (token) {
-    next();
-  } else {
-    if (whiteList.includes(to.path)) {
-      next();
+    // 允许未登录访问的路由白名单
+    const whiteList = ['/login', '/signin'];
+
+    if (token) {
+        next();
     } else {
-      next({ path: '/login' });
+        if (whiteList.includes(to.path)) {
+            next();
+        } else {
+            next({path: '/login'});
+        }
     }
-  }
 });
 
 
 // //路由全局后置钩子
 router.afterEach(() => {
-  NProgress.done();
+    NProgress.done();
 });
 
 export default router;
