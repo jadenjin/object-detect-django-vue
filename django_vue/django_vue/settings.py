@@ -124,10 +124,9 @@ REST_FRAMEWORK = {
 
     # jwt
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        # 'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        'detect.TokenAuthtication.TokenAuthtication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
-        # 'dj_vue_jc.TokenAuthtication.TokenAuthtication',
     ),
 }
 
