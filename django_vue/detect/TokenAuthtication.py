@@ -18,7 +18,7 @@ class TokenAuthtication(BaseAuthentication):
             # 先从前端的 headers 里拿到当前登录用户 token
             token = request.headers.get("Ac-Token")
             # 通过 jwt 反解过期和验证信息
-            data = jwt.decode(token, settings.SECRET_KEY, 'HS256')
+            data = jwt.decode(token, settings.SECRET_KEY, 'HS256',leeway=60)
 
             # 如果时间过期 需要重新登陆
             if data["exp"] < int(time.time()):
