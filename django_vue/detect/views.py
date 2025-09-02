@@ -11,6 +11,7 @@ from .Serializer import *
 from .models import *
 from ultralytics import YOLO
 import datetime
+from django.utils import timezone
 import jwt
 import os
 
@@ -44,6 +45,8 @@ class uploadApiview(APIView):
 
 # 注册接口
 class RegistryView(APIView):
+    authentication_classes = []
+
     def post(self, request):
         username = request.data.get("username")
         password = request.data.get("password")
@@ -60,43 +63,39 @@ class RegistryView(APIView):
 
 # 登录接口
 class LoginView(APIView):
+    authentication_classes = []
+
     def post(self, request):
+        ret = {"data": {}, "meta": {"status": 500, "message": "用户不存在或密码错误"}}
         try:
             username = request.data["username"]
             password = request.data["password"]
-            if SysUser.objects.filter(username=username).exists():
-                user = SysUser.objects.filter(username=username)
-                if check_password(password, user.first().password):
-                    pass
-                else:
-                    ret["meta"]["status"] = 500
-                    ret["meta"]["message"] = "用户不存在或密码错误"
-                    return Response(ret)
-                dict = {
-                    "exp": datetime.datetime.now() + datetime.timedelta(days=1),  # 过期时间
-                    "iat": datetime.datetime.now(),  # 开始时间
-                    "id": str(user.first().id),
-                    "username": user.first().username,
-                }
-                token = jwt.encode(dict, settings.SECRET_KEY, algorithm="HS256")
-                ret["data"]["token"] = token
-                ret["data"]["username"] = user.first().username
-                ret["data"]["user_id"] = str(user.first().id)
-                # 这里需要根据数据库判断是不是管理员
-                ret["data"]["isAdmin"] = 1
-                ret["meta"]["status"] = 200
-                ret["meta"]["message"] = "登录成功"
-                logger.info(user.first().username + '登录成功')
+
+            user = SysUser.objects.filter(username=username).first()
+            if not user or not check_password(password, user.password):
                 return Response(ret)
-            else:
-                ret["meta"]["status"] = 500
-                ret["meta"]["message"] = "用户不存在或密码错误"
-                return Response(ret)
+            now = timezone.now()
+            payload = {
+                "exp": now + datetime.timedelta(days=1),  # 过期时间（UTC）
+                "iat": now,  # 签发时间（UTC）
+                "sub": str(user.id),  # 建议用标准claim：sub
+                "username": user.username,  # 自定义claim也OK
+            }
+            token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+            ret["data"].update({
+                "token": token,
+                "username": user.username,
+                "user_id": str(user.id),
+                "isAdmin": 1,
+            })
+            ret["meta"]["status"] = 200
+            ret["meta"]["message"] = "登录成功"
+            logger.info(f"{user.username} 登录成功")
+            return Response(ret)
         except Exception as error:
             logger.error(error)
-            ret["meta"]["status"] = 500
-            ret["meta"]["message"] = "用户不存在或密码错误"
             return Response(ret)
+
 
 # 模型接口
 class ModelView(APIView):
