@@ -1,2 +1,4 @@
 /django_vue_tushu_front/node_modules/
 /.idea/
+
+.idea/*
